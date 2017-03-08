@@ -306,7 +306,9 @@ PhantomJsHeadlessAnalyzer.prototype.getDependencies = function (doneFn, task) {
         if (me.includeAllScriptTags === true) {
             files = me.resolveTheTwoFileSetsToBeInTheRightOrder(foundFiles.scriptTags, foundFiles.history);
         } else {
-            files = me.normaliseFilePaths(foundFiles.history);
+            // ORIGINAL BEFORE HTML5 and uiRouter. 2017-March
+            // files = me.normaliseFilePaths(foundFiles.history);
+            files = me.normaliseFilePaths(foundFiles.scriptTags);
         }
         phantomjs.halt();
     });
