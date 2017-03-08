@@ -119,7 +119,9 @@ PhantomJsHeadlessAnalyzer.prototype.normaliseFilePaths = function (filePaths) {
 
 PhantomJsHeadlessAnalyzer.prototype.normaliseFilePath = function (filePath) {
     if (/^http:/.test(filePath)) {
-        filePath = filePath.replace(/^http:\/\/localhost:3000\/*/, "");
+        // ORIGINAL BEFORE HTML5 and uiRouter. 2017-March
+        // filePath = filePath.replace(/^http:\/\/localhost:3002\/*/, "");
+        filePath = filePath.replace(/^http:\/\/localhost:3002\/*/, "client/");
     } else {
         filePath = this.pageRoot + path.sep + filePath;
     }
@@ -192,7 +194,7 @@ function turnUrlIntoRelativeDirectory(relativeTo, url) {
         url = url.substring(5);
     }
     if (/^http:/.test(url)) {
-        url = url.substring("http://localhost:3000/".length);
+        url = url.substring("http://localhost:3002/".length);
     }
 	url = path.normalize(url);
     return path.relative(relativeTo, url.substring(0, url.lastIndexOf(path.sep)));
@@ -202,10 +204,10 @@ PhantomJsHeadlessAnalyzer.prototype.startWebServerToHostPage = function (tempPag
     this.app = connect()
               //.use(connect.logger('dev'))
               .use(connect["static"](process.cwd()))
-              .listen(3000);
+        .listen(3002);
     var pathSepReplacement = new RegExp("\\" + path.sep, "g");
-    grunt.log.debug("Connect started: " + "http://localhost:3000/" + tempPage.replace(pathSepReplacement, "/") + "  -  " + process.cwd());
-    return "http://localhost:3000/" + tempPage.replace(pathSepReplacement, "/");
+    grunt.log.debug("Connect started: " + "http://localhost:3002/" + tempPage.replace(pathSepReplacement, "/") + "  -  " + process.cwd());
+    return "http://localhost:3002/" + tempPage.replace(pathSepReplacement, "/");
 };
 
 PhantomJsHeadlessAnalyzer.prototype.resolveTheTwoFileSetsToBeInTheRightOrder = function (allScripts, history) {
