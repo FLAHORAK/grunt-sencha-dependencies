@@ -119,7 +119,10 @@ PhantomJsHeadlessAnalyzer.prototype.normaliseFilePaths = function (filePaths) {
 
 PhantomJsHeadlessAnalyzer.prototype.normaliseFilePath = function (filePath) {
     if (/^http:/.test(filePath)) {
-        filePath = filePath.replace(/^http:\/\/localhost:3000\/*/, "");
+        // ORIGINAL BEFORE HTML5 and uiRouter. 2017-March
+        filePath = filePath.replace(/^http:\/\/localhost:3002\/*/, "");
+        // getting it working with absolute paths was almost working by having the replace be with `client/`
+        // filePath = filePath.replace(/^http:\/\/localhost:3002\/*/, "client/");
     } else {
         filePath = this.pageRoot + path.sep + filePath;
     }
@@ -134,9 +137,9 @@ PhantomJsHeadlessAnalyzer.prototype.reorderFiles = function (history) {
     for (var i = 0, len = history.length; i < len; i++) {
         var filePath = history[i];
         if (filePath !== appFile &&
-                !/\/ext(-all|-all-debug|-debug){0,1}.js/.test(filePath) &&
-                !/\/sencha-touch(-all|-all-debug|-debug){0,1}.js/.test(filePath) &&
-                !/\/microloader\/development.js/.test(filePath)) {
+            !/\/ext(-all|-all-debug|-debug){0,1}.js/.test(filePath) &&
+            !/\/sencha-touch(-all|-all-debug|-debug){0,1}.js/.test(filePath) &&
+            !/\/microloader\/development.js/.test(filePath)) {
 
             if (fs.existsSync(filePath)) {
                 var stats = fs.statSync(filePath);
@@ -192,20 +195,20 @@ function turnUrlIntoRelativeDirectory(relativeTo, url) {
         url = url.substring(5);
     }
     if (/^http:/.test(url)) {
-        url = url.substring("http://localhost:3000/".length);
+        url = url.substring("http://localhost:3002/".length);
     }
-	url = path.normalize(url);
+    url = path.normalize(url);
     return path.relative(relativeTo, url.substring(0, url.lastIndexOf(path.sep)));
 }
 
 PhantomJsHeadlessAnalyzer.prototype.startWebServerToHostPage = function (tempPage) {
     this.app = connect()
-              //.use(connect.logger('dev'))
-              .use(connect["static"](process.cwd()))
-              .listen(3000);
+        //.use(connect.logger('dev'))
+        .use(connect["static"](process.cwd()))
+        .listen(3002);
     var pathSepReplacement = new RegExp("\\" + path.sep, "g");
-    grunt.log.debug("Connect started: " + "http://localhost:3000/" + tempPage.replace(pathSepReplacement, "/") + "  -  " + process.cwd());
-    return "http://localhost:3000/" + tempPage.replace(pathSepReplacement, "/");
+    grunt.log.debug("Connect started: " + "http://localhost:3002/" + tempPage.replace(pathSepReplacement, "/") + "  -  " + process.cwd());
+    return "http://localhost:3002/" + tempPage.replace(pathSepReplacement, "/");
 };
 
 PhantomJsHeadlessAnalyzer.prototype.resolveTheTwoFileSetsToBeInTheRightOrder = function (allScripts, history) {
@@ -287,7 +290,7 @@ PhantomJsHeadlessAnalyzer.prototype.getDependencies = function (doneFn, task) {
         errorCount.push(msg);
         if (errorCount.length === 1) {
             grunt.log.warn("A JavaScript error occured whilst loading your page - this could" +
-                            " cause problems with the generated file list. Run with -v to see all errors");
+                " cause problems with the generated file list. Run with -v to see all errors");
         }
         var msgStack = ["ERROR: " + msg];
         msgStack.push("TRACE:");
@@ -304,7 +307,12 @@ PhantomJsHeadlessAnalyzer.prototype.getDependencies = function (doneFn, task) {
         if (me.includeAllScriptTags === true) {
             files = me.resolveTheTwoFileSetsToBeInTheRightOrder(foundFiles.scriptTags, foundFiles.history);
         } else {
+            // ORIGINAL BEFORE HTML5 and uiRouter. 2017-March
             files = me.normaliseFilePaths(foundFiles.history);
+            // absolute paths were almost working by targeting the scriptTags array here NOT the history.
+            // But that caused other problems with it that were too complicated to full workthrough.
+            // Leaving this comment here just in case we encounter more issues with the PhantomJS build step.
+            // files = me.normaliseFilePaths(foundFiles.scriptTags);
         }
         phantomjs.halt();
     });
